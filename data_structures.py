@@ -112,47 +112,13 @@ class AddressBook(UserDict):
                     day_name = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][
                         day_of_week]
                     birthdays[day_name].append(user_name)
-        for day, names in birthdays.items():
-            print(f"{day}: {', '.join(names)}")
+
         return birthdays
 
 
 if __name__ == "__main__":
     # Створення нової адресної книги
     book = AddressBook()
-    #
-    # # Створення запису для John
-    # john_record = Record("John")
-    # john_record.add_phone("1234567890")
-    # john_record.add_phone("5555555555")
-    #
-    # # Додавання запису John до адресної книги
-    # book.add_record(john_record)
-    #
-    # # Створення та додавання нового запису для Jane
-    # jane_record = Record("Jane")
-    # jane_record.add_phone("9876543210")
-    # book.add_record(jane_record)
-    #
-    # # Виведення всіх записів у книзі
-    # for name, record in book.data.items():
-    #     print(record)
-    #
-    # # Знаходження та редагування телефону для John
-    # john = book.find("John")
-    # john.edit_phone("1234567890", "1112223333")
-    #
-    # print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
-    #
-    # # Пошук конкретного телефону у записі John
-    # found_phone = john.find_phone("5555555555")
-    # print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
-    #
-    # # Видалення запису Jane
-    # book.delete("Jane")
-    #
-    # # Створення адресної книги
-
 
     # Створення кількох контактів
     contact_1 = Record("Анна")
@@ -165,7 +131,6 @@ if __name__ == "__main__":
     contact_3.add_phone("9876543210")
 
     # Додавання днів народження до контактів
-    # Припустимо, що Анна народилася 10 березня, Олексій - 15 березня, а Марія - 20 березня
     contact_1.add_birthday("11.03.1111")
     contact_2.add_birthday("15.03.1544")
     contact_3.add_birthday("20.03.2000")
