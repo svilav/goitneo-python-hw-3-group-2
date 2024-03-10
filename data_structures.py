@@ -1,5 +1,9 @@
 import re
-from collections import UserDict
+from collections import UserDict, defaultdict
+from datetime import datetime
+
+
+DATE_FORMAT = '%d.%m.%Y'
 
 
 class Field:
@@ -25,10 +29,26 @@ class Phone(Field):
         return re.fullmatch(r'\d{10}', phone) is not None
 
 
+class Birthday(Field):
+    def __init__(self, value):
+        if not self.validate(value):
+            raise ValueError(f"Birthday must be in {DATE_FORMAT} format")
+        super().__init__(value)
+
+    @staticmethod
+    def validate(birthday):
+        try:
+            datetime.strptime(birthday, DATE_FORMAT)
+            return True
+        except ValueError:
+            return False
+
+
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
+        self.birthday = None
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
@@ -53,8 +73,11 @@ class Record:
                 return p
         return None
 
+    def add_birthday(self, birthday):
+        self.birthday = Birthday(birthday)
+
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, Birthday: {self.birthday.value if self.birthday else 'Not set'}"
 
 
 class AddressBook(UserDict):
@@ -70,37 +93,89 @@ class AddressBook(UserDict):
             return True
         return False
 
+    def get_birthdays_per_week(self):
+        today = datetime.today()
+        birthdays = defaultdict(list)
+
+        for user in self.data.values():
+            user_name = user.name.value
+            if user.birthday:
+                birthday_date = datetime.strptime(user.birthday.value, DATE_FORMAT)
+                birthday_this_year = birthday_date.replace(year=today.year)
+                if birthday_this_year < today:
+                    birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+                delta_days = (birthday_this_year - today).days
+                if delta_days <= 7:
+                    day_of_week = birthday_this_year.weekday()
+                    if day_of_week == 5 or day_of_week == 6:
+                        day_of_week = 0
+                    day_name = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][
+                        day_of_week]
+                    birthdays[day_name].append(user_name)
+        for day, names in birthdays.items():
+            print(f"{day}: {', '.join(names)}")
+        return birthdays
+
 
 if __name__ == "__main__":
     # Створення нової адресної книги
     book = AddressBook()
+    #
+    # # Створення запису для John
+    # john_record = Record("John")
+    # john_record.add_phone("1234567890")
+    # john_record.add_phone("5555555555")
+    #
+    # # Додавання запису John до адресної книги
+    # book.add_record(john_record)
+    #
+    # # Створення та додавання нового запису для Jane
+    # jane_record = Record("Jane")
+    # jane_record.add_phone("9876543210")
+    # book.add_record(jane_record)
+    #
+    # # Виведення всіх записів у книзі
+    # for name, record in book.data.items():
+    #     print(record)
+    #
+    # # Знаходження та редагування телефону для John
+    # john = book.find("John")
+    # john.edit_phone("1234567890", "1112223333")
+    #
+    # print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+    #
+    # # Пошук конкретного телефону у записі John
+    # found_phone = john.find_phone("5555555555")
+    # print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
+    #
+    # # Видалення запису Jane
+    # book.delete("Jane")
+    #
+    # # Створення адресної книги
 
-    # Створення запису для John
-    john_record = Record("John")
-    john_record.add_phone("1234567890")
-    john_record.add_phone("55555555555")
 
-    # Додавання запису John до адресної книги
-    book.add_record(john_record)
+    # Створення кількох контактів
+    contact_1 = Record("Анна")
+    contact_2 = Record("Олексій")
+    contact_3 = Record("Марія")
 
-    # Створення та додавання нового запису для Jane
-    jane_record = Record("Jane")
-    jane_record.add_phone("9876543210")
-    book.add_record(jane_record)
+    # Додавання телефонів до контактів
+    contact_1.add_phone("0987654321")
+    contact_2.add_phone("1234567890")
+    contact_3.add_phone("9876543210")
 
-    # Виведення всіх записів у книзі
-    for name, record in book.data.items():
-        print(record)
+    # Додавання днів народження до контактів
+    # Припустимо, що Анна народилася 10 березня, Олексій - 15 березня, а Марія - 20 березня
+    contact_1.add_birthday("11.03.1111")
+    contact_2.add_birthday("15.03.1544")
+    contact_3.add_birthday("20.03.2000")
 
-    # Знаходження та редагування телефону для John
-    john = book.find("John")
-    john.edit_phone("1234567890", "1112223333")
+    # Додавання контактів до адресної книги
+    book.add_record(contact_1)
+    book.add_record(contact_2)
+    book.add_record(contact_3)
 
-    print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+    # Використання функції get_birthdays_per_week для визначення, кого потрібно привітати на наступному тижні
+    birthdays_next_week = book.get_birthdays_per_week()
 
-    # Пошук конкретного телефону у записі John
-    found_phone = john.find_phone("5555555555")
-    print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
 
-    # Видалення запису Jane
-    book.delete("Jane")
